@@ -62,10 +62,13 @@ services:
       SPRING_REDIS_PORT: 6379
       JWT_SECRET: xima_jwt_secret_key_for_production_use_change_this
       JWT_EXPIRATION: 86400000
+      LOG_DIR: /app/logs
+      CONSOLE_CHARSET: UTF-8
     ports:
       - "8080:8080"
     volumes:
       - uploads_data:/app/uploads
+      - logs_data:/app/logs
     depends_on:
       mysql:
         condition: service_healthy
@@ -124,3 +127,4 @@ volumes:
   mysql_data:
   redis_data:
   uploads_data:
+  logs_data:

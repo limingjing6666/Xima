@@ -86,14 +86,9 @@ springdoc:
   swagger-ui:
     enabled: ${SWAGGER_ENABLED:false}
 
-# 日志配置
+# 日志配置（详细配置见 logback-spring.xml）
 logging:
   level:
     root: INFO
     com.xima: DEBUG
     com.xima.app.mapper: DEBUG
-  file:
-    name: /app/logs/xima-app.log
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

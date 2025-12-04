@@ -18,13 +18,13 @@ import java.io.File;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Value("${app.upload.avatar-dir:C:/Users/23725/Desktop/Xima/uploads/avatars}")
+    @Value("${app.upload.avatar-dir:./uploads/avatars}")
     private String avatarDir;
 
-    @Value("${app.upload.background-dir:C:/Users/23725/Desktop/Xima/uploads/backgrounds}")
+    @Value("${app.upload.background-dir:./uploads/backgrounds}")
     private String backgroundDir;
 
-    @Value("${file.upload-dir:C:/Users/23725/Desktop/Xima/uploads/}")
+    @Value("${file.upload-dir:./uploads/}")
     private String baseUploadDir;
 
     @PostConstruct
@@ -48,30 +48,39 @@ public class WebMvcConfig implements WebMvcConfigurer {
         }
     }
 
+    /**
+     * 将路径转换为绝对路径的文件URL
+     */
+    private String toFileUrl(String path) {
+        File file = new File(path);
+        String absolutePath = file.getAbsolutePath().replace("\\", "/");
+        return "file:///" + absolutePath + "/";
+    }
+
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         // 配置头像静态资源访问
-        String avatarLocation = "file:///" + avatarDir.replace("\\", "/") + "/";
+        String avatarLocation = toFileUrl(avatarDir);
         log.info("静态资源映射: /uploads/avatars/** -> {}", avatarLocation);
         registry.addResourceHandler("/uploads/avatars/**")
                 .addResourceLocations(avatarLocation);
         
         // 配置背景图片静态资源访问
-        String bgLocation = "file:///" + backgroundDir.replace("\\", "/") + "/";
+        String bgLocation = toFileUrl(backgroundDir);
         log.info("静态资源映射: /uploads/backgrounds/** -> {}", bgLocation);
         registry.addResourceHandler("/uploads/backgrounds/**")
                 .addResourceLocations(bgLocation);
         
         // 配置聊天图片静态资源访问
         String chatImgPath = baseUploadDir + "chat/images";
-        String chatImgLocation = "file:///" + chatImgPath.replace("\\", "/") + "/";
+        String chatImgLocation = toFileUrl(chatImgPath);
         log.info("静态资源映射: /uploads/chat/images/** -> {}", chatImgLocation);
         registry.addResourceHandler("/uploads/chat/images/**")
                 .addResourceLocations(chatImgLocation);
         
         // 配置聊天文件静态资源访问
         String chatFilePath = baseUploadDir + "chat/files";
-        String chatFileLocation = "file:///" + chatFilePath.replace("\\", "/") + "/";
+        String chatFileLocation = toFileUrl(chatFilePath);
         log.info("静态资源映射: /uploads/chat/files/** -> {}", chatFileLocation);
         registry.addResourceHandler("/uploads/chat/files/**")
                 .addResourceLocations(chatFileLocation);
