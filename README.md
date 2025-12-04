@@ -1,7 +1,7 @@
 # Xima 即时通讯应用
 
 <p align="center">
-  <img src="docs/assets/logo.png" alt="Xima Logo" width="120">
+  <img src="docs/assets/logo.svg" alt="Xima Logo" width="120">
 </p>
 
 <p align="center">
