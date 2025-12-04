@@ -1,0 +1,281 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  // 主题色 - 黑白简约
+  --primary-color: #1a1a2e;
+  --primary-light: #4a4a5a;
+  --primary-dark: #0d0d1a;
+  --primary-gradient: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #2d2d44 0%, #3d3d54 100%);
+  
+  // 强调色 - 保持简约
+  --accent-gradient: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  --success-gradient: linear-gradient(135deg, #059669 0%, #047857 100%);
+  
+  // 背景色 - 纯净白色
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #fafafa;
+  --bg-chat: #ffffff;
+  
+  // 玻璃拟态 - 简化
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --backdrop-blur: blur(10px);
+  
+  // 文字色 - 黑白层次
+  --text-primary: #1a1a2e;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  
+  // 边框 - 淡灰色
+  --border-color: #e5e7eb;
+  --border-light: #f3f4f6;
+  
+  // 阴影 - 中性灰色
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 30px rgba(0, 0, 0, 0.1);
+  
+  // 状态色 - 保持功能性
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
+  --info-color: #1a1a2e;
+  
+  // 圆角 - 更小更简约
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+  
+  &:hover {
+    background: #94a3b8;
+  }
+}
+
+// 通用样式
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 动画
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+// ============ Element Plus 消息提示美化 - 黑白简约 ============
+.el-message {
+  --el-message-padding: 12px 20px;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  min-width: 160px;
+  
+  .el-message__content {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .el-message__icon {
+    font-size: 18px;
+    margin-right: 10px;
+  }
+  
+  // 成功消息 - 深色
+  &.el-message--success {
+    background: #1a1a2e !important;
+    
+    .el-message__content,
+    .el-message__icon {
+      color: #fff !important;
+    }
+  }
+  
+  // 错误消息 - 保持红色但简约
+  &.el-message--error {
+    background: #dc2626 !important;
+    
+    .el-message__content,
+    .el-message__icon {
+      color: #fff !important;
+    }
+  }
+  
+  // 警告消息 - 深灰
+  &.el-message--warning {
+    background: #4b5563 !important;
+    
+    .el-message__content,
+    .el-message__icon {
+      color: #fff !important;
+    }
+  }
+  
+  // 信息消息 - 深色
+  &.el-message--info {
+    background: #1a1a2e !important;
+    
+    .el-message__content,
+    .el-message__icon {
+      color: #fff !important;
+    }
+  }
+}
+
+// ============ Element Plus 通知美化 - 黑白简约 ============
+.el-notification {
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+  background: #fff !important;
+  
+  .el-notification__title {
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+  
+  .el-notification__content {
+    color: #6b7280;
+  }
+  
+  &.right {
+    border-left: 3px solid #1a1a2e !important;
+  }
+}
+
+// ============ Element Plus 对话框美化 - 黑白简约 ============
+.el-dialog {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12) !important;
+  
+  .el-dialog__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    
+    .el-dialog__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+  }
+  
+  .el-dialog__body {
+    padding: 24px;
+  }
+  
+  .el-dialog__footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+  }
+}
+
+// ============ Element Plus MessageBox 美化 - 黑白简约 ============
+.el-message-box {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15) !important;
+  padding: 24px !important;
+  
+  .el-message-box__header {
+    padding-bottom: 12px;
+    
+    .el-message-box__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+  }
+  
+  .el-message-box__content {
+    padding: 16px 0;
+    color: #6b7280;
+  }
+  
+  .el-message-box__btns {
+    padding-top: 16px;
+    
+    .el-button {
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-weight: 500;
+    }
+    
+    .el-button--primary {
+      background: #1a1a2e;
+      border: none;
+      
+      &:hover {
+        background: #2d2d44;
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xima.app.mapper.GroupMapper">
+
+    <resultMap id="GroupResultMap" type="com.xima.app.entity.ChatGroup">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="description" column="description"/>
+        <result property="ownerId" column="owner_id"/>
+        <result property="maxMembers" column="max_members"/>
+        <result property="memberCount" column="member_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO chat_group (name, avatar, description, owner_id, max_members, member_count)
+        VALUES (#{name}, #{avatar}, #{description}, #{ownerId}, #{maxMembers}, #{memberCount})
+    </insert>
+
+    <select id="findById" resultMap="GroupResultMap">
+        SELECT * FROM chat_group WHERE id = #{id}
+    </select>
+
+    <update id="update">
+        UPDATE chat_group
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="maxMembers != null">max_members = #{maxMembers},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM chat_group WHERE id = #{id}
+    </delete>
+
+    <select id="findByUserId" resultMap="GroupResultMap">
+        SELECT g.* FROM chat_group g
+        INNER JOIN group_member gm ON g.id = gm.group_id
+        WHERE gm.user_id = #{userId}
+        ORDER BY g.update_time DESC
+    </select>
+
+    <update id="updateMemberCount">
+        UPDATE chat_group SET member_count = #{count} WHERE id = #{id}
+    </update>
+
+    <update id="incrementMemberCount">
+        UPDATE chat_group SET member_count = member_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="decrementMemberCount">
+        UPDATE chat_group SET member_count = member_count - 1 WHERE id = #{id} AND member_count > 0
+    </update>
+
+    <update id="updateOwner">
+        UPDATE chat_group SET owner_id = #{ownerId} WHERE id = #{id}
+    </update>
+
+</mapper>

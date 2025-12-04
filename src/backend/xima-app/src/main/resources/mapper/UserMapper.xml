@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xima.app.mapper.UserMapper">
+
+    <!-- 用户结果映射 -->
+    <resultMap id="UserResultMap" type="com.xima.app.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nickname"/>
+        <result property="email" column="email"/>
+        <result property="avatar" column="avatar"/>
+        <result property="chatBackground" column="chat_background"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <collection property="roles" ofType="com.xima.app.entity.Role">
+            <id property="id" column="role_id"/>
+            <result property="name" column="role_name" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        </collection>
+    </resultMap>
+
+    <!-- 根据ID查询用户 -->
+    <select id="findById" resultMap="UserResultMap">
+        SELECT u.*, r.id as role_id, r.name as role_name
+        FROM user u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN role r ON ur.role_id = r.id
+        WHERE u.id = #{id}
+    </select>
+
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT u.*, r.id as role_id, r.name as role_name
+        FROM user u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN role r ON ur.role_id = r.id
+        WHERE u.username = #{username}
+    </select>
+
+    <!-- 根据邮箱查询用户 -->
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT u.*, r.id as role_id, r.name as role_name
+        FROM user u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN role r ON ur.role_id = r.id
+        WHERE u.email = #{email}
+    </select>
+
+    <!-- 检查用户名是否存在 -->
+    <select id="existsByUsername" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM user WHERE username = #{username}
+    </select>
+
+    <!-- 检查邮箱是否存在 -->
+    <select id="existsByEmail" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM user WHERE email = #{email}
+    </select>
+
+    <!-- 插入用户 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, nickname, email, avatar, status, create_time, update_time)
+        VALUES (#{username}, #{password}, #{nickname}, #{email}, #{avatar}, #{status}, NOW(), NOW())
+    </insert>
+
+    <!-- 更新用户信息 -->
+    <update id="update">
+        UPDATE user
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="chatBackground != null">chat_background = #{chatBackground},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新聊天背景 -->
+    <update id="updateChatBackground">
+        UPDATE user SET chat_background = #{chatBackground}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 更新用户状态 -->
+    <update id="updateStatus">
+        UPDATE user SET status = #{status}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="deleteById">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+
+    <!-- 查询所有用户 -->
+    <select id="findAll" resultMap="UserResultMap">
+        SELECT u.*, r.id as role_id, r.name as role_name
+        FROM user u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN role r ON ur.role_id = r.id
+    </select>
+
+    <!-- 分页查询用户 -->
+    <select id="findByPage" resultMap="UserResultMap">
+        SELECT u.*, r.id as role_id, r.name as role_name
+        FROM user u
+        LEFT JOIN user_role ur ON u.id = ur.user_id
+        LEFT JOIN role r ON ur.role_id = r.id
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计用户总数 -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <!-- 为用户添加角色 -->
+    <insert id="insertUserRole">
+        INSERT INTO user_role (user_id, role_id, create_time)
+        VALUES (#{userId}, #{roleId}, NOW())
+    </insert>
+
+    <!-- 根据角色名查询角色ID -->
+    <select id="findRoleIdByName" resultType="java.lang.Long">
+        SELECT id FROM role WHERE name = #{name}
+    </select>
+
+    <!-- 更新用户头像 -->
+    <update id="updateAvatar">
+        UPDATE user SET avatar = #{avatar}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <!-- 重置所有用户状态为离线 -->
+    <update id="resetAllUsersStatus">
+        UPDATE user SET status = 'OFFLINE' WHERE status = 'ONLINE'
+    </update>
+
+</mapper>

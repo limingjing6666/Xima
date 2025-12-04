@@ -1,0 +1,99 @@
+# Docker环境配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: xima-app
+  
+  # MySQL数据库配置
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/xima?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:xima}
+    password: ${SPRING_DATASOURCE_PASSWORD:xima123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: XimaHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+  
+  # Redis配置
+  redis:
+    host: ${SPRING_REDIS_HOST:redis}
+    port: ${SPRING_REDIS_PORT:6379}
+    timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+  
+  # 邮件配置
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.xima.app.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:xima_jwt_secret_key_for_production_use_change_this}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# 文件上传配置
+upload:
+  path: /app/uploads
+  avatar-path: /app/uploads/avatars
+  background-path: /app/uploads/backgrounds
+  max-size: 10485760
+
+# 应用配置
+app:
+  upload:
+    avatar-dir: /app/uploads/avatars
+    background-dir: /app/uploads/backgrounds
+
+# 文件存储配置
+file:
+  upload-dir: /app/uploads/
+
+# Swagger配置（生产环境禁用）
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.xima: DEBUG
+    com.xima.app.mapper: DEBUG
+  file:
+    name: /app/logs/xima-app.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

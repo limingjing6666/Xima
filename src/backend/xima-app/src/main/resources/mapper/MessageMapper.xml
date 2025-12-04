@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xima.app.mapper.MessageMapper">
+
+    <!-- 消息结果映射 -->
+    <resultMap id="MessageResultMap" type="com.xima.app.entity.Message">
+        <id property="id" column="id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="receiverId" column="receiver_id"/>
+        <result property="content" column="content"/>
+        <result property="contentType" column="content_type" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="recalled" column="recalled"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 根据ID查询消息 -->
+    <select id="findById" resultMap="MessageResultMap">
+        SELECT * FROM message WHERE id = #{id}
+    </select>
+
+    <!-- 插入消息 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (sender_id, receiver_id, content, content_type, status, create_time)
+        VALUES (#{senderId}, #{receiverId}, #{content}, #{contentType}, #{status}, NOW())
+    </insert>
+
+    <!-- 更新消息状态 -->
+    <update id="updateStatus">
+        UPDATE message SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 查询两个用户之间的聊天记录 -->
+    <select id="findChatHistory" resultMap="MessageResultMap">
+        SELECT * FROM message 
+        WHERE (sender_id = #{userId1} AND receiver_id = #{userId2})
+           OR (sender_id = #{userId2} AND receiver_id = #{userId1})
+        ORDER BY create_time ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询用户的离线消息 -->
+    <select id="findOfflineMessages" resultMap="MessageResultMap">
+        SELECT * FROM message 
+        WHERE receiver_id = #{receiverId} AND status = 'SENT'
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 批量更新消息状态为已送达 -->
+    <update id="updateStatusToDelivered">
+        UPDATE message SET status = 'DELIVERED' 
+        WHERE receiver_id = #{receiverId} AND status = 'SENT'
+    </update>
+
+    <!-- 统计未读消息数 -->
+    <select id="countUnreadMessages" resultType="long">
+        SELECT COUNT(*) FROM message 
+        WHERE receiver_id = #{receiverId} 
+        AND sender_id = #{senderId}
+        AND status != 'READ'
+    </select>
+
+    <!-- 删除消息 -->
+    <delete id="deleteById">
+        DELETE FROM message WHERE id = #{id}
+    </delete>
+
+    <!-- 撤回消息 -->
+    <update id="recallMessage">
+        UPDATE message SET recalled = true WHERE id = #{id}
+    </update>
+
+    <!-- 搜索消息（只搜索文本消息） -->
+    <select id="searchMessages" resultMap="MessageResultMap">
+        SELECT * FROM message 
+        WHERE (sender_id = #{userId} OR receiver_id = #{userId})
+        AND recalled = false
+        AND content_type = 'TEXT'
+        AND content LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+</mapper>

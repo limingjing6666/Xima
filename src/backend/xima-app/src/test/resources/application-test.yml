@@ -1,0 +1,50 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: xima-app-test
+  
+  # H2内存数据库配置（测试用）
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  # Redis配置（测试用 - 使用本地Redis或跳过）
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 1000ms
+  
+  # 禁用Redis自动配置（测试时）
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  
+  h2:
+    console:
+      enabled: true
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.xima.app.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+
+# JWT配置
+jwt:
+  secret: test_jwt_secret_key_for_unit_testing_purposes_only
+  expiration: 86400000
+
+# 日志配置
+logging:
+  level:
+    root: WARN
+    com.xima: DEBUG
