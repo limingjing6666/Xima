@@ -1,6 +1,7 @@
 <template>
   <div class="settings-container">
     <div class="settings-header">
+      <el-icon v-if="isMobile" class="back-btn" @click="goBack"><ArrowLeft /></el-icon>
       <h2>个人设置</h2>
     </div>
     
@@ -55,8 +56,47 @@
           </el-form>
         </div>
         
+        <!-- 服务器设置（仅原生 App 显示） -->
+        <div class="settings-section" v-if="isNativeApp">
+          <h3>服务器设置</h3>
+          <div class="server-setting">
+            <p class="current-server">当前服务器：{{ currentServer }}</p>
+            <el-button @click="goToServerConfig">
+              切换服务器
+            </el-button>
+          </div>
+        </div>
+        
+        <!-- 移动端功能菜单 -->
+        <div class="settings-section mobile-menu" v-if="isMobile">
+          <h3>更多设置</h3>
+          <div class="menu-list">
+            <div class="menu-item" @click="showNotificationSettings">
+              <el-icon><Bell /></el-icon>
+              <span>通知设置</span>
+              <el-icon class="arrow"><ArrowRight /></el-icon>
+            </div>
+            <div class="menu-item" @click="showSecuritySettings">
+              <el-icon><Lock /></el-icon>
+              <span>隐私与安全</span>
+              <el-icon class="arrow"><ArrowRight /></el-icon>
+            </div>
+            <div class="menu-item" @click="showAbout">
+              <el-icon><InfoFilled /></el-icon>
+              <span>关于 Xima</span>
+              <el-icon class="arrow"><ArrowRight /></el-icon>
+            </div>
+          </div>
+          <div class="logout-section">
+            <el-button type="danger" plain @click="handleLogout" class="logout-btn">
+              <el-icon><SwitchButton /></el-icon>
+              退出登录
+            </el-button>
+          </div>
+        </div>
+        
         <!-- 聊天背景 -->
-        <div class="settings-section">
+        <div class="settings-section" v-if="!isNativeApp">
           <h3>聊天背景</h3>
           <div class="background-setting">
             <div class="background-options">
@@ -93,8 +133,8 @@
         
       </div>
       
-      <!-- 右侧预览面板 -->
-      <div class="preview-panel">
+      <!-- 右侧预览面板（仅 Web 显示） -->
+      <div class="preview-panel" v-if="!isNativeApp">
         <!-- 预览标题 -->
         <div class="preview-title">
           <el-icon><ChatDotRound /></el-icon>
@@ -163,22 +203,232 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { userApi } from '@/api/user'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { toast } from '@/utils/toast'
-import { Camera, Check, Picture, View, User, ChatDotRound, ChatLineSquare, InfoFilled } from '@element-plus/icons-vue'
+import { Camera, Check, Picture, View, User, ChatDotRound, ChatLineSquare, InfoFilled, ArrowLeft, Bell, Lock, ArrowRight, SwitchButton } from '@element-plus/icons-vue'
+import config from '@/config'
 
+const router = useRouter()
 const userStore = useUserStore()
 const userInfo = computed(() => userStore.userInfo)
+
+// 是否移动端
+const isMobile = ref(window.innerWidth <= 767)
+
+// 返回上一页
+const goBack = () => {
+  router.back()
+}
+
+// 是否原生 App
+const isNativeApp = config.isNative()
+
+// 当前服务器地址
+const currentServer = computed(() => {
+  return localStorage.getItem('serverUrl') || 'http://81.68.192.124:8080'
+})
+
+// 跳转到服务器配置页
+const goToServerConfig = () => {
+  router.push('/server-config')
+}
+
+// 通知设置
+const notificationEnabled = ref(localStorage.getItem('notificationEnabled') !== 'false')
+const soundEnabled = ref(localStorage.getItem('soundEnabled') !== 'false')
+
+const showNotificationSettings = () => {
+  ElMessageBox({
+    title: '通知设置',
+    message: `
+      <div style="padding: 8px 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px;">
+          <span>消息通知</span>
+          <input type="checkbox" id="notif-toggle" ${notificationEnabled.value ? 'checked' : ''} style="width: 18px; height: 18px;">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+          <span>提示音</span>
+          <input type="checkbox" id="sound-toggle" ${soundEnabled.value ? 'checked' : ''} style="width: 18px; height: 18px;">
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '保存',
+    cancelButtonText: '取消',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        const notifEl = document.getElementById('notif-toggle')
+        const soundEl = document.getElementById('sound-toggle')
+        if (notifEl && soundEl) {
+          notificationEnabled.value = notifEl.checked
+          soundEnabled.value = soundEl.checked
+          localStorage.setItem('notificationEnabled', notifEl.checked.toString())
+          localStorage.setItem('soundEnabled', soundEl.checked.toString())
+          ElMessage.success('设置已保存')
+        }
+      }
+      done()
+    }
+  })
+}
+
+// 隐私与安全设置
+const showSecuritySettings = () => {
+  ElMessageBox({
+    title: '隐私与安全',
+    message: `
+      <div style="padding: 8px 0;">
+        <div style="padding: 16px; background: #f8f9fa; border-radius: 10px; margin-bottom: 16px;">
+          <div style="font-weight: 600; color: #1a1a2e; margin-bottom: 12px; font-size: 14px;">账号信息</div>
+          <div style="font-size: 13px; color: #6b7280;">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+              <span style="color: #9ca3af;">用户名</span>
+              <span style="color: #1a1a2e; font-weight: 500;">${userInfo.value?.username || '-'}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+              <span style="color: #9ca3af;">邮箱</span>
+              <span style="color: #1a1a2e; font-weight: 500;">${userInfo.value?.email || '未绑定'}</span>
+            </div>
+          </div>
+        </div>
+        <div id="change-password-btn" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #f8f9fa; border-radius: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+          <div>
+            <div style="font-weight: 600; color: #1a1a2e; font-size: 14px;">修改密码</div>
+            <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">定期更换密码保护账号安全</div>
+          </div>
+          <span style="color: #9ca3af;">›</span>
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: '关闭',
+    showCancelButton: false
+  }).then(() => {}).catch(() => {})
+  
+  // 绑定修改密码按钮事件
+  setTimeout(() => {
+    const btn = document.getElementById('change-password-btn')
+    if (btn) {
+      btn.onclick = () => {
+        ElMessageBox.close()
+        showChangePassword()
+      }
+    }
+  }, 100)
+}
+
+// 显示修改密码弹窗
+const showChangePassword = () => {
+  ElMessageBox({
+    title: '修改密码',
+    message: `
+      <div style="padding: 8px 0;">
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">原密码</label>
+          <input type="password" id="old-password" placeholder="请输入原密码" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1a1a2e'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">新密码</label>
+          <input type="password" id="new-password" placeholder="请输入新密码（至少6位）" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1a1a2e'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div>
+          <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">确认新密码</label>
+          <input type="password" id="confirm-password" placeholder="请再次输入新密码" style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1a1a2e'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '确认修改',
+    cancelButtonText: '取消',
+    beforeClose: async (action, instance, done) => {
+      if (action === 'confirm') {
+        const oldPwd = document.getElementById('old-password')?.value
+        const newPwd = document.getElementById('new-password')?.value
+        const confirmPwd = document.getElementById('confirm-password')?.value
+        
+        if (!oldPwd) {
+          ElMessage.warning('请输入原密码')
+          return
+        }
+        if (!newPwd || newPwd.length < 6) {
+          ElMessage.warning('新密码长度不能少于6位')
+          return
+        }
+        if (newPwd !== confirmPwd) {
+          ElMessage.warning('两次输入的密码不一致')
+          return
+        }
+        
+        instance.confirmButtonLoading = true
+        try {
+          const res = await userApi.changePassword(oldPwd, newPwd)
+          if (res.code === 200) {
+            ElMessage.success('密码修改成功')
+            done()
+          } else {
+            ElMessage.error(res.message || '修改失败')
+          }
+        } catch (e) {
+          ElMessage.error('修改失败')
+        } finally {
+          instance.confirmButtonLoading = false
+        }
+      } else {
+        done()
+      }
+    }
+  })
+}
+
+// 关于 Xima
+const showAbout = () => {
+  ElMessageBox.alert(
+    `<div style="text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 16px;">💬</div>
+      <h3 style="margin: 0 0 8px; color: #1a1a2e;">Xima 即时通讯</h3>
+      <p style="color: #6b7280; margin: 0 0 16px;">版本 1.0.0</p>
+      <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+        一款简洁、高效的即时通讯应用<br/>
+        支持私聊、群聊、文件传输等功能
+      </p>
+    </div>`,
+    '关于 Xima',
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '知道了',
+      center: true
+    }
+  )
+}
+
+// 退出登录
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    userStore.logout()
+    router.push('/login')
+  }).catch(() => {})
+}
 
 // 处理头像URL
 const getAvatarUrl = (avatar) => {
   if (!avatar) return ''
-  if (avatar.startsWith('http') || avatar.startsWith('/api') || avatar.startsWith('data:')) {
+  if (avatar.startsWith('http') || avatar.startsWith('data:')) {
     return avatar
   }
-  return avatar.startsWith('/') ? `/api${avatar}` : `/api/${avatar}`
+  const path = avatar.startsWith('/') ? avatar : '/' + avatar
+  if (config.isNative()) {
+    return config.getResourceUrl(path)
+  }
+  return path
 }
 
 // 计算头像显示URL
@@ -440,6 +690,19 @@ const selectBackground = async (value) => {
   padding: 20px 24px;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  .back-btn {
+    font-size: 22px;
+    cursor: pointer;
+    color: #1a1a2e;
+    
+    &:active {
+      opacity: 0.7;
+    }
+  }
   
   h2 {
     font-size: 18px;
@@ -872,38 +1135,66 @@ const selectBackground = async (value) => {
 // 移动端响应式样式
 @media (max-width: 767px) {
   .settings-container {
-    padding-bottom: 70px;
+    padding-bottom: 80px;
+    background: #f5f5f5;
   }
   
   .settings-header {
-    padding: 16px !important;
+    padding: 16px 20px !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+    color: #fff;
+    border-bottom: none !important;
+    
+    .back-btn {
+      color: #fff !important;
+    }
     
     h2 {
-      font-size: 20px;
+      font-size: 18px;
+      color: #fff;
     }
   }
   
   .settings-main {
     flex-direction: column !important;
-    padding: 16px !important;
-    gap: 16px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    background: #f5f5f5;
   }
   
   .settings-panel {
     width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
   }
   
   .settings-preview {
-    width: 100% !important;
-    position: relative !important;
-    top: auto !important;
+    display: none !important;
   }
   
   .settings-section {
-    padding: 16px !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
     
     h3 {
-      font-size: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      &::before {
+        content: '';
+        width: 4px;
+        height: 16px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #4a4a5a 100%);
+        border-radius: 2px;
+      }
     }
   }
   
@@ -911,16 +1202,153 @@ const selectBackground = async (value) => {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      
+      :deep(.el-avatar) {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+    
+    .avatar-tips {
+      margin-top: 12px;
+      
+      p {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+    }
   }
   
   .profile-form {
+    :deep(.el-form-item) {
+      margin-bottom: 20px;
+    }
+    
     :deep(.el-form-item__label) {
       width: 70px !important;
+      font-weight: 500;
+      color: #6b7280;
+    }
+    
+    :deep(.el-input__wrapper) {
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    
+    :deep(.el-button) {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
     }
   }
   
   .bg-options {
     grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+// 服务器设置样式
+.server-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .current-server {
+    color: var(--text-secondary);
+    font-size: 14px;
+    word-break: break-all;
+  }
+}
+
+// 移动端菜单样式
+.mobile-menu {
+  h3 {
+    margin-bottom: 12px !important;
+  }
+  
+  .menu-list {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fff;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    &:active {
+      background: #f8f9fa;
+      transform: scale(0.99);
+    }
+    
+    .el-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+      margin-right: 14px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #3d3d54 100%);
+    }
+    
+    span {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a2e;
+    }
+    
+    .arrow {
+      width: auto;
+      height: auto;
+      font-size: 16px;
+      color: #c4c4c4;
+      background: none;
+      margin-right: 0;
+    }
+  }
+  
+  .logout-section {
+    margin-top: 24px;
+    
+    .logout-btn {
+      width: 100%;
+      height: 50px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 14px;
+      border: none;
+      background: #fff;
+      color: #dc2626;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      
+      &:hover, &:active {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      
+      .el-icon {
+        margin-right: 8px;
+      }
+    }
   }
 }
 </style>

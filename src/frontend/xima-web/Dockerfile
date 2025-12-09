@@ -1,13 +1,17 @@
 # 构建阶段
-FROM node:18-alpine AS builder
+FROM docker.1panel.live/library/node:18-alpine AS builder
 WORKDIR /app
+
+# 配置淘宝 npm 镜像
+RUN npm config set registry https://registry.npmmirror.com
+
 COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
 
 # 运行阶段 - 使用nginx
-FROM nginx:alpine
+FROM docker.1panel.live/library/nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

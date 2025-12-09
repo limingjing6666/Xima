@@ -1,7 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import config from '@/config'
 
 const routes = [
+  {
+    path: '/server-config',
+    name: 'ServerConfig',
+    component: () => import('@/views/ServerConfig.vue'),
+    meta: { requiresAuth: false }
+  },
   {
     path: '/login',
     name: 'Login',
@@ -54,6 +61,18 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
+  
+  // 原生 App 环境：服务器配置页面只能从设置页面进入
+  if (config.isNative() && to.path === '/server-config') {
+    // 只有从设置页面来的才允许访问
+    if (from.path === '/settings') {
+      next()
+      return
+    }
+    // 其他情况：已登录去首页，未登录去登录页
+    next(userStore.isLoggedIn ? '/' : '/login')
+    return
+  }
   
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     next('/login')

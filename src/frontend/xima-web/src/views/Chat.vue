@@ -652,6 +652,7 @@ import { messageApi } from '@/api/message'
 import FriendProfileCard from '@/components/FriendProfileCard.vue'
 import MemberProfileCard from '@/components/MemberProfileCard.vue'
 import dayjs from 'dayjs'
+import config from '@/config'
 
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -712,9 +713,14 @@ onUnmounted(() => {
   document.removeEventListener('click', hideMessageMenu)
 })
 
-// 移动端返回
+// 移动端返回（聊天页面返回会话列表）
 const goBack = () => {
   chatStore.clearCurrentChat()
+}
+
+// 移动端返回首页
+const goHome = () => {
+  router.back()
 }
 
 // 表情列表
@@ -749,12 +755,18 @@ const filteredGroups = computed(() => {
 // 处理头像URL，确保路径正确
 const getAvatarUrl = (avatar) => {
   if (!avatar) return ''
-  // 如果已经是完整URL或以/api开头，直接返回
-  if (avatar.startsWith('http') || avatar.startsWith('/api')) {
+  // 如果已经是完整URL，直接返回
+  if (avatar.startsWith('http')) {
     return avatar
   }
-  // 否则添加/api前缀
-  return avatar.startsWith('/') ? `/api${avatar}` : `/api/${avatar}`
+  // 确保路径以 / 开头
+  const path = avatar.startsWith('/') ? avatar : '/' + avatar
+  // 原生 App：拼接服务器地址
+  if (config.isNative()) {
+    return config.getResourceUrl(path)
+  }
+  // Web 环境：直接返回路径（通过 Vite 代理 /uploads）
+  return path
 }
 
 // 聊天背景样式
@@ -1455,6 +1467,17 @@ watch(currentMessages, () => {
   gap: 10px;
   align-items: center;
   
+  .back-btn {
+    font-size: 22px;
+    cursor: pointer;
+    color: #1a1a2e;
+    flex-shrink: 0;
+    
+    &:active {
+      opacity: 0.7;
+    }
+  }
+  
   .search-input-container {
     flex: 1;
   }
@@ -2026,6 +2049,7 @@ watch(currentMessages, () => {
 @media (max-width: 767px) {
   .chat-container {
     position: relative;
+    height: 100%;
   }
   
   .conversation-list {
@@ -2037,9 +2061,31 @@ watch(currentMessages, () => {
     bottom: 0;
     z-index: 10;
     transition: transform 0.3s ease;
+    background: var(--bg-secondary);
     
     &.mobile-hidden {
       transform: translateX(-100%);
+    }
+  }
+  
+  .search-box {
+    padding: 12px 16px;
+  }
+  
+  .section-title {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  
+  .conversation-item {
+    padding: 12px 16px;
+    
+    .conversation-name {
+      font-size: 15px;
+    }
+    
+    .conversation-last {
+      font-size: 12px;
     }
   }
   
@@ -2051,37 +2097,146 @@ watch(currentMessages, () => {
     right: 0;
     bottom: 0;
     z-index: 20;
+    display: flex;
+    flex-direction: column;
   }
   
   .chat-header {
-    .chat-title {
-      font-size: 16px;
-    }
-  }
-  
-  .message-input-area {
-    padding: 8px 12px;
+    padding: 12px 16px;
+    min-height: 56px;
     
-    .input-actions {
-      gap: 8px;
+    .back-btn {
+      font-size: 22px;
+      margin-right: 12px;
+      padding: 4px;
+      cursor: pointer;
       
-      .el-icon {
-        font-size: 20px;
+      &:active {
+        opacity: 0.7;
       }
     }
     
-    :deep(.el-input__wrapper) {
-      padding: 8px 12px;
+    .chat-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .chat-status {
+      font-size: 12px;
+    }
+  }
+  
+  .message-list {
+    flex: 1;
+    padding: 12px 16px;
+    padding-bottom: 8px;
+  }
+  
+  .message-item {
+    margin-bottom: 12px;
+    
+    .el-avatar {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 12px;
+    }
+  }
+  
+  .message-content {
+    .message-sender {
+      font-size: 11px;
+      margin-bottom: 2px;
     }
   }
   
   .message-bubble {
-    max-width: 85% !important;
+    max-width: 70vw !important;
+    min-width: 60px;
     font-size: 14px;
+    padding: 10px 14px;
+    line-height: 1.5;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  
+  .message-image {
+    max-width: 200px !important;
+    
+    :deep(.el-image) {
+      border-radius: 12px;
+    }
+  }
+  
+  .message-file {
+    padding: 10px 14px;
+    
+    .file-icon {
+      font-size: 20px;
+    }
+    
+    .file-name {
+      font-size: 13px;
+    }
+  }
+  
+  .system-message {
+    font-size: 11px;
+    padding: 4px 12px;
+    margin: 8px 0;
+  }
+  
+  .message-input-area {
+    padding: 10px 12px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+    
+    .input-row {
+      gap: 8px;
+    }
+    
+    .input-actions {
+      gap: 6px;
+      
+      .el-icon {
+        font-size: 22px;
+        padding: 6px;
+        
+        &:active {
+          opacity: 0.7;
+        }
+      }
+    }
+    
+    :deep(.el-input__wrapper) {
+      padding: 10px 14px;
+      border-radius: 20px;
+    }
+    
+    :deep(.el-input__inner) {
+      font-size: 15px;
+    }
+    
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      padding: 0;
+      border-radius: 50%;
+      
+      .el-icon {
+        font-size: 18px;
+      }
+    }
   }
   
   .chat-empty {
     display: none;
+  }
+  
+  // 消息时间戳
+  .message-time {
+    font-size: 10px;
   }
 }
 </style>

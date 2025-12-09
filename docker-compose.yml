@@ -60,8 +60,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: xima123456
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      JWT_SECRET: xima_jwt_secret_key_for_production_use_change_this
-      JWT_EXPIRATION: 86400000
+      JWT_SECRET: ${JWT_SECRET:-xima_jwt_secret_key_for_production_use_change_this}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       LOG_DIR: /app/logs
       CONSOLE_CHARSET: UTF-8
     ports:

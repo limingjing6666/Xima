@@ -7,33 +7,39 @@
       </router-link>
       
       <nav class="sidebar-nav">
-        <el-tooltip content="消息" placement="right" :show-after="300">
+        <el-tooltip content="消息" placement="right" :show-after="300" :disabled="isMobile">
           <router-link to="/chat" class="nav-item" :class="{ active: activeMenu === '/chat' }">
             <el-icon><ChatDotRound /></el-icon>
+            <span class="nav-label">消息</span>
             <span v-if="unreadCount > 0" class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
           </router-link>
         </el-tooltip>
         
-        <el-tooltip content="通讯录" placement="right" :show-after="300">
+        <el-tooltip content="通讯录" placement="right" :show-after="300" :disabled="isMobile">
           <router-link to="/contacts" class="nav-item" :class="{ active: activeMenu === '/contacts' }">
             <el-icon><User /></el-icon>
+            <span class="nav-label">通讯录</span>
           </router-link>
         </el-tooltip>
         
-        <el-tooltip content="设置" placement="right" :show-after="300">
+        <el-tooltip content="设置" placement="right" :show-after="300" :disabled="isMobile">
           <router-link to="/settings" class="nav-item" :class="{ active: activeMenu === '/settings' }">
             <el-icon><Setting /></el-icon>
+            <span class="nav-label">设置</span>
           </router-link>
         </el-tooltip>
       </nav>
       
-      <div class="sidebar-footer" ref="userMenuRef">
+      <!-- 桌面端：用户头像和弹出菜单 -->
+      <div class="sidebar-footer" ref="userMenuRef" v-if="!isMobile">
         <el-tooltip content="个人中心" placement="right" :show-after="300">
-          <div class="user-avatar" @click="showUserMenu = !showUserMenu">
-            <el-avatar :size="36" :src="userAvatarUrl">
-              {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
-            </el-avatar>
-            <span class="online-dot"></span>
+          <div class="user-avatar-wrapper" @click="showUserMenu = !showUserMenu">
+            <div class="user-avatar">
+              <el-avatar :size="36" :src="userAvatarUrl">
+                {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
+              </el-avatar>
+              <span class="online-dot"></span>
+            </div>
           </div>
         </el-tooltip>
         
@@ -117,8 +123,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Bell, Lock, ArrowRight, Close, Edit, InfoFilled } from '@element-plus/icons-vue'
+import { Bell, Lock, ArrowRight, Close, Edit, InfoFilled, UserFilled } from '@element-plus/icons-vue'
 import { userApi } from '@/api/user'
+import config from '@/config'
 
 const route = useRoute()
 const router = useRouter()
@@ -130,6 +137,9 @@ const unreadCount = computed(() => chatStore.totalUnreadCount)
 const showUserMenu = ref(false)
 const userMenuRef = ref(null)
 
+// 检测是否移动端
+const isMobile = ref(window.innerWidth <= 767)
+
 // 点击外部关闭用户菜单
 const handleClickOutside = (event) => {
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
@@ -140,10 +150,16 @@ const handleClickOutside = (event) => {
 // 处理头像URL
 const getAvatarUrl = (avatar) => {
   if (!avatar) return ''
-  if (avatar.startsWith('http') || avatar.startsWith('/api')) {
+  if (avatar.startsWith('http')) {
     return avatar
   }
-  return avatar.startsWith('/') ? `/api${avatar}` : `/api/${avatar}`
+  const path = avatar.startsWith('/') ? avatar : '/' + avatar
+  // 原生 App：拼接服务器地址
+  if (config.isNative()) {
+    return config.getResourceUrl(path)
+  }
+  // Web 环境：直接返回路径
+  return path
 }
 
 // 计算用户头像URL
@@ -241,7 +257,7 @@ const connectWebSocket = () => {
   const token = userStore.token
   if (!token) return
   
-  const wsUrl = `ws://${window.location.host}/api/ws/chat?token=${token}`
+  const wsUrl = `${config.getWsBaseUrl()}?token=${token}`
   ws = new WebSocket(wsUrl)
   
   ws.onopen = () => {
@@ -645,6 +661,10 @@ provide('sendMessage', sendMessage)
     font-size: 22px;
   }
   
+  .nav-label {
+    display: none;
+  }
+  
   &:hover {
     color: #1a1a2e;
     background: #f5f5f5;
@@ -953,10 +973,12 @@ provide('sendMessage', sendMessage)
     left: 0;
     right: 0;
     width: 100% !important;
-    height: 60px;
+    height: 65px;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-evenly;
+    align-items: center;
     padding: 8px 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     border-right: none;
     border-top: 1px solid #e5e7eb;
     z-index: 100;
@@ -971,38 +993,34 @@ provide('sendMessage', sendMessage)
     gap: 0;
     padding: 0;
     width: 100%;
-    justify-content: space-around;
+    justify-content: space-evenly;
   }
   
   .nav-item {
-    width: 44px;
-    height: 44px;
+    flex: 1;
+    height: auto;
+    flex-direction: column;
+    padding: 4px 0;
+    gap: 2px;
     
     .el-icon {
-      font-size: 24px;
+      font-size: 22px;
+    }
+    
+    .nav-label {
+      display: block !important;
+      font-size: 10px;
     }
     
     .badge {
-      top: 0;
-      right: 0;
+      top: -2px;
+      right: 8px;
     }
   }
   
+  // 移动端隐藏 sidebar-footer
   .sidebar-footer {
-    margin-top: 0;
-    padding: 0;
-    
-    .user-avatar {
-      :deep(.el-avatar) {
-        width: 36px !important;
-        height: 36px !important;
-      }
-      
-      .online-dot {
-        width: 8px;
-        height: 8px;
-      }
-    }
+    display: none !important;
   }
   
   .user-menu {

@@ -279,3 +279,184 @@ html, body {
     }
   }
 }
+
+// ============ 移动端 & App 全局适配 ============
+@media (max-width: 767px) {
+  // 禁用移动端的 hover 效果（避免点击后残留）
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  // 优化触摸滚动
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  
+  // 隐藏滚动条（移动端）
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  // 输入框优化
+  input, textarea {
+    font-size: 16px !important; // 防止 iOS 自动缩放
+  }
+  
+  // Element Plus 组件移动端适配
+  .el-dialog {
+    width: 90% !important;
+    max-width: 400px;
+    margin: 0 auto !important;
+    
+    .el-dialog__body {
+      padding: 16px !important;
+    }
+  }
+  
+  .el-drawer {
+    max-width: 100% !important;
+  }
+  
+  .el-message {
+    min-width: auto !important;
+    max-width: 85% !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+  
+  .el-message-box {
+    width: 90% !important;
+    max-width: 360px;
+    padding: 24px !important;
+    border-radius: 20px !important;
+    
+    .el-message-box__header {
+      padding-bottom: 16px;
+      
+      .el-message-box__title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+    
+    .el-message-box__headerbtn {
+      top: 20px;
+      right: 20px;
+      width: 28px;
+      height: 28px;
+      
+      .el-message-box__close {
+        font-size: 16px;
+      }
+    }
+    
+    .el-message-box__content {
+      padding: 0;
+      font-size: 15px;
+    }
+    
+    .el-message-box__btns {
+      padding-top: 20px;
+      
+      .el-button {
+        height: 44px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        padding: 0 24px;
+      }
+      
+      .el-button--primary {
+        background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+        border: none;
+        min-width: 100px;
+      }
+    }
+  }
+  
+  .el-popover {
+    max-width: 90vw !important;
+  }
+  
+  // 按钮触摸优化
+  .el-button {
+    min-height: 44px; // iOS 推荐的最小触摸目标
+    
+    &--small {
+      min-height: 36px;
+    }
+  }
+  
+  // 表单项间距
+  .el-form-item {
+    margin-bottom: 16px;
+  }
+}
+
+// ============ 安全区域适配（刘海屏/底部横条）============
+@supports (padding: env(safe-area-inset-top)) {
+  // 顶部安全区域
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  // 底部安全区域
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  // 移动端需要考虑安全区域
+  @media (max-width: 767px) {
+    // 顶部状态栏安全区域
+    .home-container,
+    .login-container,
+    .register-container,
+    .settings-container,
+    .contacts-container {
+      padding-top: env(safe-area-inset-top) !important;
+    }
+    
+    .chat-container {
+      padding-top: env(safe-area-inset-top) !important;
+    }
+    
+    // 底部导航安全区域
+    .sidebar {
+      padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    }
+    
+    .message-input-area {
+      padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
+
+// ============ App 专用样式（通过 JS 添加 class）============
+.is-native-app {
+  // 禁用文本选择（更像原生 App）
+  user-select: none;
+  -webkit-user-select: none;
+  
+  // 禁用长按菜单
+  -webkit-touch-callout: none;
+  
+  // 输入框允许选择
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+// ============ 横屏适配 ============
+@media (max-width: 900px) and (orientation: landscape) {
+  .login-left, .register-left {
+    display: none !important;
+  }
+  
+  .chat-container {
+    .conversation-list {
+      width: 280px !important;
+    }
+  }
+}

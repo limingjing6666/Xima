@@ -434,7 +434,7 @@ const handleLogin = async (forceLogin = false) => {
   }
 }
 
-// 响应式
+// 响应式 - 平板
 @media (max-width: 900px) {
   .login-left {
     display: none;
@@ -442,6 +442,82 @@ const handleLogin = async (forceLogin = false) => {
   
   .login-right {
     width: 100%;
+  }
+}
+
+// 响应式 - 手机
+@media (max-width: 480px) {
+  .login-container {
+    background: linear-gradient(180deg, #1a1a2e 0%, #1a1a2e 30%, #fff 30%);
+  }
+  
+  .login-right {
+    padding: 20px;
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+  
+  .login-box {
+    max-width: 100%;
+  }
+  
+  .logo {
+    text-align: center;
+    margin-bottom: 24px;
+    
+    .logo-text {
+      color: #fff;
+      font-size: 28px;
+    }
+  }
+  
+  .login-header {
+    text-align: center;
+    margin-bottom: 24px;
+    
+    h1 {
+      font-size: 24px;
+    }
+    
+    p {
+      font-size: 13px;
+    }
+  }
+  
+  .login-form {
+    .form-group {
+      margin-bottom: 16px;
+      
+      label {
+        font-size: 12px;
+      }
+      
+      :deep(.el-input__wrapper) {
+        height: 44px;
+      }
+    }
+    
+    .form-options {
+      margin-bottom: 20px;
+      
+      :deep(.el-checkbox__label) {
+        font-size: 12px;
+      }
+      
+      .forgot-link {
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .login-btn {
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .login-footer {
+    margin-top: 24px;
+    font-size: 13px;
   }
 }
 </style>

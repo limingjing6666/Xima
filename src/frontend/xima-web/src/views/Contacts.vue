@@ -3,6 +3,7 @@
     <!-- 页面头部 -->
     <div class="contacts-header">
       <div class="header-left">
+        <el-icon v-if="isMobile" class="back-btn" @click="goBack"><ArrowLeft /></el-icon>
         <h2>通讯录</h2>
         <span class="friend-count">{{ activeTab === 'friends' ? filteredFriendList.length + ' 位好友' : filteredGroupList.length + ' 个群聊' }}</span>
       </div>
@@ -252,13 +253,22 @@ import { friendApi } from '@/api/friend'
 import { userApi } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { toast } from '@/utils/toast'
-import { Plus, Bell, ChatDotRound, UserFilled, Search, Close, User, ChatLineSquare } from '@element-plus/icons-vue'
+import { Plus, Bell, ChatDotRound, UserFilled, Search, Close, User, ChatLineSquare, ArrowLeft } from '@element-plus/icons-vue'
 import FriendProfileCard from '@/components/FriendProfileCard.vue'
 import CreateGroupDialog from '@/components/CreateGroupDialog.vue'
+import config from '@/config'
 
 const router = useRouter()
 const chatStore = useChatStore()
 const userStore = useUserStore()
+
+// 是否移动端
+const isMobile = ref(window.innerWidth <= 767)
+
+// 返回上一页
+const goBack = () => {
+  router.back()
+}
 
 const activeTab = ref('friends')
 const showAddFriend = ref(false)
@@ -324,10 +334,16 @@ const handleGroupCreated = (group) => {
 // 处理头像URL
 const getAvatarUrl = (avatar) => {
   if (!avatar) return ''
-  if (avatar.startsWith('http') || avatar.startsWith('/api')) {
+  if (avatar.startsWith('http')) {
     return avatar
   }
-  return avatar.startsWith('/') ? `/api${avatar}` : `/api/${avatar}`
+  const path = avatar.startsWith('/') ? avatar : '/' + avatar
+  // 原生 App：拼接服务器地址
+  if (config.isNative()) {
+    return config.getResourceUrl(path)
+  }
+  // Web 环境：直接返回路径
+  return path
 }
 
 const getStatusText = (status) => {
@@ -450,8 +466,18 @@ onMounted(() => {
   
   .header-left {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 12px;
+    
+    .back-btn {
+      font-size: 22px;
+      cursor: pointer;
+      color: #1a1a2e;
+      
+      &:active {
+        opacity: 0.7;
+      }
+    }
     
     h2 {
       font-size: 20px;
@@ -990,14 +1016,31 @@ onMounted(() => {
 
 // 移动端响应式样式
 @media (max-width: 767px) {
+  .contacts-container {
+    background: #f5f5f5;
+    padding-bottom: 80px;
+  }
+  
   .contacts-header {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 12px;
-    padding: 16px !important;
+    padding: 16px 20px !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
     
-    .header-left h2 {
-      font-size: 20px;
+    .header-left {
+      .back-btn {
+        color: #fff !important;
+      }
+      
+      h2 {
+        font-size: 18px;
+        color: #fff;
+      }
+      
+      .friend-count {
+        color: rgba(255, 255, 255, 0.7);
+      }
     }
     
     .header-right {
@@ -1005,36 +1048,72 @@ onMounted(() => {
       
       .search-box {
         flex: 1;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        
+        .search-icon {
+          color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .search-input {
+          color: #fff;
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+          }
+        }
+      }
+      
+      .add-friend-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        
+        .el-icon {
+          color: #fff;
+        }
       }
     }
   }
   
   .tabs-section {
-    padding: 0 16px 12px !important;
+    padding: 16px !important;
+    background: #f5f5f5;
     
     .tab-item {
-      padding: 6px 12px;
-      font-size: 13px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 20px;
+      background: #fff;
+      
+      &.active {
+        background: #1a1a2e;
+        color: #fff;
+      }
     }
   }
   
   .requests-section {
-    padding: 12px 16px !important;
+    padding: 0 16px 12px !important;
     
     .request-card {
       width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
   }
   
   .friends-section {
-    padding: 16px !important;
+    padding: 0 16px 16px !important;
     
     .friends-grid {
       grid-template-columns: 1fr !important;
+      gap: 12px;
     }
     
     .friend-card {
-      padding: 12px !important;
+      padding: 16px !important;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
   }
 }

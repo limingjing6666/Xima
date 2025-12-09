@@ -8,6 +8,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import './styles/global.scss'
+import config from './config'
 
 const app = createApp(App)
 
@@ -41,5 +42,22 @@ const initTheme = () => {
   }
 }
 initTheme()
+
+// 检测原生 App 环境，添加特殊样式类
+if (config.isNative()) {
+  document.body.classList.add('is-native-app')
+  
+  // 禁用双击缩放
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+      e.preventDefault()
+    }
+  }, { passive: false })
+  
+  // 禁用双指缩放
+  document.addEventListener('gesturestart', (e) => {
+    e.preventDefault()
+  })
+}
 
 app.mount('#app')

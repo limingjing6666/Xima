@@ -40,7 +40,7 @@ cd /opt
 tar -xzf xima.tar.gz -C xima
 cd xima
 
-# 3. 安装 Docker
+# 3. 安装 Docker (已配置阿里云镜像源 + 国内加速器)
 chmod +x deploy/*.sh
 ./deploy/install-docker.sh
 

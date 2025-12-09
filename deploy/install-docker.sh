@@ -28,12 +28,15 @@ yum remove -y docker \
 echo "[2/6] 安装依赖包..."
 yum install -y yum-utils device-mapper-persistent-data lvm2
 
-# 3. 添加Docker仓库
-echo "[3/6] 添加 Docker 仓库..."
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# 3. 添加Docker仓库 (使用阿里云镜像源，国内速度更快)
+echo "[3/6] 添加 Docker 仓库 (阿里云镜像源)..."
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 
-# 如果官方源太慢，可以使用阿里云镜像
-# yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# 替换仓库地址为阿里云镜像 (解决官方源GPG key下载失败问题)
+sed -i 's+download.docker.com+mirrors.aliyun.com/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+
+# 更新yum缓存
+yum makecache fast
 
 # 4. 安装Docker
 echo "[4/6] 安装 Docker CE..."
@@ -45,9 +48,8 @@ mkdir -p /etc/docker
 cat > /etc/docker/daemon.json <<EOF
 {
     "registry-mirrors": [
-        "https://mirror.ccs.tencentyun.com",
-        "https://docker.mirrors.ustc.edu.cn",
-        "https://hub-mirror.c.163.com"
+        "https://docker.m.daocloud.io",
+        "https://docker.1panel.live"
     ],
     "log-driver": "json-file",
     "log-opts": {

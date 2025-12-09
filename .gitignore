@@ -48,3 +48,11 @@ docker/nginx/logs/*.log
 **/application.yml
 *.pem
 *.key
+# ===== 安卓包 =====
+src/frontend/xima-web/android
+# ===== 压缩文件 =====
+*.zip
+*.tar
+*.gz
+# ===== 其他配置文件 =====
+src\frontend\xima-web\capacitor.config.json
